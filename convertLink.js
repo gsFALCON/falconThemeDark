@@ -1,17 +1,34 @@
-function linkify(inputText) {
-    var replacedText, replacePattern1, replacePattern2, replacePattern3;
+const convertLinks = ( input ) => {
 
-    //URLs starting with http://, https://, or ftp://
-    replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
-    replacedText = inputText.replace(replacePattern1, '<a href="$1" target="_blank">$1</a>');
+  let text = input;
+  const linksFound = text.match( /(?:www|https?)[^\s]+/g );
+  const aLink = [];
 
-    //URLs starting with "www." (without // before it, or it'd re-link the ones done above).
-    replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
-    replacedText = replacedText.replace(replacePattern2, '$1<a href="http://$2" target="_blank">$2</a>');
+  if ( linksFound != null ) {
 
-    //Change email addresses to mailto:: links.
-    replacePattern3 = /(([a-zA-Z0-9\-\_\.])+@[a-zA-Z\_]+?(\.[a-zA-Z]{2,6})+)/gim;
-    replacedText = replacedText.replace(replacePattern3, '<a href="mailto:$1">$1</a>');
+    for ( let i=0; i<linksFound.length; i++ ) {
+      let replace = linksFound[i];
+      if ( !( linksFound[i].match( /(http(s?)):\/\// ) ) ) { replace = 'http://' + linksFound[i] }
+      let linkText = replace.split( '/' )[2];
+      if ( linkText.substring( 0, 3 ) == 'www' ) { linkText = linkText.replace( 'www.', '' ) }
+      if ( linkText.match( /youtu/ ) ) {
 
-    return replacedText;
+        let youtubeID = replace.split( '/' ).slice(-1)[0];
+        aLink.push( '<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/' + youtubeID + '" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>' )
+      }
+      else if ( linkText.match( /vimeo/ ) ) {
+        let vimeoID = replace.split( '/' ).slice(-1)[0];
+        aLink.push( '<div class="video-wrapper"><iframe src="https://player.vimeo.com/video/' + vimeoID + '" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe></div>' )
+      }
+      else {
+        aLink.push( '<a href="' + replace + '" target="_blank">' + linkText + '</a>' );
+      }
+      text = text.split( linksFound[i] ).map(item => { return aLink[i].includes('iframe') ? item.trim() : item } ).join( aLink[i] );
+    }
+    return text;
+
+  }
+  else {
+    return input;
+  }
 }
