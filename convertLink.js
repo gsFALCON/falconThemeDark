@@ -39,3 +39,8 @@ convertLinks = input => {
         return input;
     }
 };
+
+
+const text = '//*[@id="post-body-118372572847181544"]/text()[1]';
+
+convertLinks(text);
